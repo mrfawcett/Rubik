@@ -7,6 +7,19 @@ class SolveCube(Cube):
 
     # Function to solve the cube
     def solve(self):
+        # If layers 1&2 solved && 'top' cross && edges && correct corners, do step 7
+
+        # If layers 1&2 solved && 'top' cross && edges, do step 6
+
+        # If layers 1&2 solved && 'top' cross, do step 5
+
+        # If layers 1&2 solved, do step 4
+
+        # If layer 1 solved, do step 3
+
+        # If 'bottom' cross, do step 2
+
+        # else step 1
         self.step_one()
 
     # Implement 7 steps
