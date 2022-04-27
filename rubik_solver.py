@@ -23,56 +23,92 @@ class SolveCube(Cube):
 
         # Execute step one - The top corners
         while (not self.step1_finished()):
-            cubbie = self.cube.find_piece(self.cube.up_color(), 
+            cubie = self.cube.find_piece(self.cube.up_color(), 
                             self.cube.front_color(), self.cube.right_color())
-            # If desired cubbie is in upper back
-            if (cubbie.pos[1] == 1 and cubbie.pos[0] == 1):
+            # If desired cubie is in upper back
+            if (cubie.pos[1] == 1 and cubie.pos[0] == 1):
                 self.cube.sequence("Ri")
-            elif (cubbie.pos[1] == 1 and cubbie.pos[0] == -1):
+            elif (cubie.pos[1] == 1 and cubie.pos[0] == -1):
                 self.cube.sequence("B Di")
 
-            # If cube is in right corner, wrong orientation
-            if (cubbie.pos == (1,1,1) and cubbie.colors[2] == self.cube.up_color()):
+            # If cubie is in right corner, wrong orientation
+            if (cubie.pos == (1,1,1) and cubie.colors[2] == self.cube.up_color()):
                 self.step_one(4)
-            elif (cubbie.pos == (1,1,1) and cubbie.colors[0] == self.cube.up_color()):
+            elif (cubie.pos == (1,1,1) and cubie.colors[0] == self.cube.up_color()):
                 self.step_one(5)
 
-            # If cubbie is on the bottom face, position to bottom right corner
-            if (cubbie.pos[1] == -1):
-                while (cubbie.pos != (1,-1,1)):
+            # If cubie is on the bottom face, position to bottom right corner
+            if (cubie.pos[1] == -1):
+                while (cubie.pos != (1,-1,1)):
                     self.cube.Di()
-            # If cubbie is in bottom right corner swap to the top
-            if (self.cube.up_color() == cubbie.colors[0]):
+            # If cubie is in bottom right corner swap to the top
+            if (self.cube.up_color() == cubie.colors[0]):
                 self.step_one(1)
-            elif (self.cube.up_color() == cubbie.colors[2]):
+            elif (self.cube.up_color() == cubie.colors[2]):
                 self.step_one(2)
-            elif (self.cube.up_color() == cubbie.colors[1]):
+            elif (self.cube.up_color() == cubie.colors[1]):
                 self.step_one(3)
 
             # Rotate cube to solve next corner
             self.cube.sequence("U Ei Di")
 
         # Execute step two - The top edges
-        
-
-        # OLD PSEUDO CODE
-                # while (not self.cube.is_solved()):
-                # If layers 1&2 solved && 'top' cross && edges && correct corners, do step 7
-                # If layers 1&2 solved && 'top' cross && edges, do step 6
-                # If layers 1&2 solved && 'top' cross, do step 5
-                # If layers 1&2 solved, do step 4
-                # If layer 1 solved, do step 3
-                # If 'bottom' cross, do step 2
-                # else step 1
-                    # self.step_one(1)
-    def step1_finished(self):
-        if (self.cube.up_color() != self.cube.get_piece(-1, 1, -1).colors[1] or
-            self.cube.up_color() != self.cube.get_piece(-1, 1, 1).colors[1] or
-            self.cube.up_color() != self.cube.get_piece(1, 1, -1).colors[1] or
-            self.cube.up_color() != self.cube.get_piece(1, 1, 1).colors[1]):
-            return False
-        return True
+        while (not self.step2_finished()):
+            cubie = self.cube.find_piece(self.cube.up_color(), 
+                        self.cube.get_piece(1, 1, 1).colors[2])
+            # If is on top layer get to bottom or solve if on right edge
+            if (cubie.pos[1] == 1):
+                if (cubie.pos[0] == 1):
+                    self.cube.sequence("S Di")
+                elif (cubie.pos[0] == -1):
+                    self.cube.sequence("Si D")
+                elif (cubie.pos[2] == -1):
+                    self.cube.sequence("Mi Di")
+                self.step_two(5)
             
+            # Else rotate until cubie is in front and not left
+            while (cubie.pos[2] != 1 or cubie.pos[0] == -1):
+                self.cube.sequence("Ei Di")
+
+            # execute appropriate modified step
+            if (cubie.pos[1] == -1 and cubie.colors[1] == self.cube.up_color()):
+                self.step_two(1)
+            elif (cubie.pos[1] == -1 and cubie.colors[2] == self.cube.up_color()):
+                self.step_two(2)
+            elif (cubie.pos[1] == 0 and cubie.colors[0] == self.cube.up_color()):
+                self.step_two(3)
+            elif (cubie.pos[1] == 0 and cubie.colors[2] == self.cube.up_color()):
+                self.step_two(4)
+
+            self.cube.U()
+
+        # Match the center of the sides together
+        while (self.cube.front_color() != self.cube.get_piece(1,1,1).colors[2]):
+            self.cube.U()
+
+        # Execute step 3 - Middle layer
+        # while (not self.step3_finished()):
+
+    # Check to see if step one is complete (only checks top colors, not sides)
+    def step1_finished(self):
+        for x in range(-1, 2, 2):
+            for z in range(-1, 2, 2):
+                if (self.cube.up_color() != self.cube.get_piece(x, 1, z).colors[1]):
+                    return False
+        return True
+
+    # Check to see if step two is complete (only checks top colors, not sides)
+    def step2_finished(self):
+        for x in range(-1, 2):
+            for z in range(-1, 2):
+                if (self.cube.up_color() != self.cube.get_piece(x, 1, z).colors[1]):
+                    return False
+        return True
+
+    def step3_finished(self):
+
+        return True            
+        
     # Implement 7 steps
     # Step 1: Place the top row corners
     def step_one(self, position):
@@ -89,7 +125,16 @@ class SolveCube(Cube):
 
     # Step 2: Place Edges and Finish top layer
     def step_two(self, position):
-        self.cube.sequence("")
+        if (position == 1):
+            self.cube.sequence("M Di Di Mi")
+        elif (position == 2):
+            self.cube.sequence("Di M D Mi")
+        elif (position == 3):
+            self.cube.sequence("E F Ei Fi")
+        elif (position == 4):
+            self.cube.sequence("E Fi Ei Ei F")
+        elif (position == 5):
+            self.cube.sequence("M Di Di Mi Di M D Mi")
 
     # Step 3: Place middle layer edges
     def step_three(self, position):
@@ -129,4 +174,4 @@ if __name__ == "__main__":
     rubik = SolveCube(cube)
     rubik.solve()
     print(rubik.cube)
-    print(rubik.step1_finished())
+    print(rubik.step2_finished())
