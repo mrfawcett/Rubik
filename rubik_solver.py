@@ -20,14 +20,15 @@ class SolveCube(Cube):
         while (self.cube.get_piece(1,1,1).colors[2] != self.cube.front_color()):
             self.cube.E()
 
-        # Rotate entire cube to the left
-        self.cube.sequence("U Ei Di")
-
+        print("--------------------\nPrime\n--------------------")
         print(self.cube)
         ##########################################
         # EXECUTE STEP 1 - The top corners
         ##########################################
         while (not self.step1_finished()):
+            # Rotate entire cube to the left
+            self.cube.sequence("U Ei Di")
+
             cubie = self.cube.find_piece(self.cube.up_color(), 
                             self.cube.front_color(), self.cube.right_color())
             # If desired cubie is in upper back
@@ -53,10 +54,8 @@ class SolveCube(Cube):
                 self.step_one(2)
             elif (self.cube.up_color() == cubie.colors[1]):
                 self.step_one(3)
-
-            # Rotate cube to solve next corner
-            self.cube.sequence("U Ei Di")
-
+            
+        print("--------------------\nStep 1\n--------------------")
         print(self.cube)
         #######################################
         # EXECUTE STEP 2 - The top edges
@@ -95,6 +94,7 @@ class SolveCube(Cube):
         while (self.cube.front_color() != self.cube.get_piece(1,1,1).colors[2]):
             self.cube.U()
 
+        print("--------------------\nStep 2\n--------------------")
         print(self.cube)
         ##################################
         # EXECUTE STEP 3 - Middle layer
@@ -140,6 +140,7 @@ class SolveCube(Cube):
             else:
                 self.step_three("L")
         
+        print("--------------------\nStep 3\n--------------------")
         print(self.cube)
         #################################################
         # EXECUTE STEP 4 - FLip cube & arrange corners
@@ -163,6 +164,7 @@ class SolveCube(Cube):
             if (self.cube.left_color() in self.cube.get_piece(1,1,1).colors):
                 self.step_four(2)
 
+        print("--------------------\nStep 4\n--------------------")
         print(self.cube)
         #####################################
         # EXECUTE STEP 5 - Correct corners
@@ -180,6 +182,7 @@ class SolveCube(Cube):
             else:
                 self.cube.sequence("U Ei Di")
 
+        print("--------------------\nStep 5\n--------------------")
         print(self.cube)
         #####################################
         # EXECUTE STEP 6 - Finish 2 edges
@@ -192,6 +195,8 @@ class SolveCube(Cube):
                 self.cube.sequence("U Ei Di")
             self.step_six()
 
+        print("--------------------\nStep 6\n--------------------")
+        print(self.cube)
         #####################################
         # EXECUTE STEP 7 - Solve last 2 edges
         #####################################
@@ -208,6 +213,8 @@ class SolveCube(Cube):
                 self.cube.sequence("U Ei Di")
             if (not self.cube.is_solved()):
                 self.step_seven("H")
+
+        print("--------------------\nSolved\n--------------------")
 
     def find_middle_edges(self, middle_edges):
         for x in range(-1, 2, 2):
