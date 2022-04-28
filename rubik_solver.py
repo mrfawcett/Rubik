@@ -1,4 +1,6 @@
+from re import T
 from rubik.cube import Cube
+import random
 
 class SolveCube(Cube):
 
@@ -7,7 +9,7 @@ class SolveCube(Cube):
 
     # Function to solve the cube
     def solve(self):
-        # Prime the cube to get top-right cubbie cy to match Top face color
+        # Prime the cube to get top-right cubbie 'y-axis color' to match Top face color
         while (self.cube.up_color() != self.cube.get_piece(1,1,1).colors[1]):
             self.cube.M()
             if (self.cube.up_color() == self.cube.get_piece(1,1,1).colors[1]):
@@ -21,6 +23,7 @@ class SolveCube(Cube):
         # Rotate entire cube to the left
         self.cube.sequence("U Ei Di")
 
+        print(self.cube)
         ##########################################
         # EXECUTE STEP 1 - The top corners
         ##########################################
@@ -54,6 +57,7 @@ class SolveCube(Cube):
             # Rotate cube to solve next corner
             self.cube.sequence("U Ei Di")
 
+        print(self.cube)
         #######################################
         # EXECUTE STEP 2 - The top edges
         #######################################
@@ -90,6 +94,7 @@ class SolveCube(Cube):
         while (self.cube.front_color() != self.cube.get_piece(1,1,1).colors[2]):
             self.cube.U()
 
+        print(self.cube)
         ##################################
         # EXECUTE STEP 3 - Middle layer
         ##################################
@@ -135,9 +140,11 @@ class SolveCube(Cube):
             else:
                 self.step_three("L")
         
+        print(self.cube)
         ######################################################
         # EXECUTE STEP 4 - Turn cube over and arrange corners
         ######################################################
+        # Flip cube over
         self.cube.sequence("F S Bi F S Bi")
 
         while (not self.step4_finished()):
@@ -155,7 +162,22 @@ class SolveCube(Cube):
             if (self.cube.left_color() in self.cube.get_piece(1,1,1).colors):
                 self.step_four(2)
 
-        
+        print(self.cube)
+        #####################################
+        # EXECUTE STEP 5 - Correct corners
+        #####################################
+        # while (not self.step5_finished()):
+        # If position is adequate execute step 5
+        if ((self.cube.get_piece(-1,1,1).colors[2] == self.cube.up_color() and
+            self.cube.get_piece(1,1,1).colors[1] == self.cube.up_color()) or
+            (self.cube.get_piece(1,1,1).colors[0] == self.cube.up_color() and
+            self.cube.get_piece(1,1,-1).colors[0] == self.cube.up_color()) or
+            (self.cube.get_piece(1,1,1).colors[1] == self.cube.up_color() and
+            self.cube.get_piece(1,1,-1).colors[0] == self.cube.up_color())):
+            self.step_five()
+        # Else rotate
+        else:
+            self.cube.sequence("U Ei Di")
 
     # Check to see if step one is complete
     def step1_finished(self):
@@ -212,6 +234,10 @@ class SolveCube(Cube):
                     return False
         return True      
         
+    # Checks if all corners are oriented correctly
+    def step5_finished(self):
+        return True
+
     # Implement 7 steps
     # Step 1: Place the top row corners
     def step_one(self, position):
@@ -254,8 +280,8 @@ class SolveCube(Cube):
             self.cube.sequence("U Li Ui L F U Fi Li U L U")
 
     # Step 5: Correctly position last layer corners
-    def step_five(self, position):
-        self.cube.sequence("")
+    def step_five(self):
+        self.cube.sequence("Li Ui L Ui Li Ui Ui L Ui Ui")
 
     # Step 6: Prepare two edges
     def step_six(self, position):
@@ -265,22 +291,29 @@ class SolveCube(Cube):
     def step_seven(self, position):
         self.cube.sequence("")
 
-    # Shuffles the cube randomly
-    def shuffle(self):
-        return ''
+    # Scrambles the cube randomly
+    def scramble(self):
+        actions = ("L", "Li", "M", "Mi", "R", "Ri",
+                    "F", "Fi", "S", "Si", "B", "Bi",
+                    "U", "Ui", "E", "Ei", "D", "Di")
+
+        sequence = ""
+        for x in range(random.randint(20, 30)):
+            sequence += actions[random.randint(0, 17)] + " "
+
+        print(sequence)
+        self.cube.sequence(sequence)
 
 
 
 if __name__ == "__main__":
     c = Cube("OOOOOOOOOYYYWWWGGGBBBYYYWWWGGGBBBYYYWWWGGGBBBRRRRRRRRR")
-    print(c)
-    print(c.is_solved())
+    # print(c)
+    # print(c.is_solved())
 
-    cube = Cube("YGGRWOGYGBWWOORWGYRYOBBYBOWBGBORROOWBGRBYGYGWRWYWYRBRO")
-    print(cube)
-    print(cube.is_solved())
-    
-    rubik = SolveCube(cube)
+    rubik = SolveCube(c)
+    rubik.scramble()
+    print(rubik.cube)
     rubik.solve()
     print(rubik.cube)
-    print(rubik.step4_finished())
+    print(rubik.step5_finished())
