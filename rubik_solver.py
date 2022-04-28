@@ -64,15 +64,14 @@ class SolveCube(Cube):
         while (not self.step2_finished()):
             cubie = self.cube.find_piece(self.cube.up_color(), 
                         self.cube.get_piece(1, 1, 1).colors[2])
-            # If is on top layer get to bottom or solve if on right edge
+            # If is on top layer get to bottom
             if (cubie.pos[1] == 1):
                 if (cubie.pos[0] == 1):
-                    self.cube.sequence("S Di")
+                    self.cube.sequence("S Di Si")
                 elif (cubie.pos[0] == -1):
-                    self.cube.sequence("Si D")
+                    self.cube.sequence("Si D S")
                 elif (cubie.pos[2] == -1):
-                    self.cube.sequence("Mi Di")
-                self.step_two(5)
+                    self.cube.sequence("Mi Di M")
             
             # Else rotate until cubie is in front and not left
             while (cubie.pos[2] != 1 or cubie.pos[0] == -1):
@@ -87,6 +86,8 @@ class SolveCube(Cube):
                 self.step_two(3)
             elif (cubie.pos[1] == 0 and cubie.colors[2] == self.cube.up_color()):
                 self.step_two(4)
+            elif (cubie.pos[1] == 1 and cubie.colors[2] == self.cube.up_color()):
+                self.step_two(5)
 
             self.cube.U()
 
@@ -106,23 +107,21 @@ class SolveCube(Cube):
                             (self.cube.right_color(), self.cube.back_color()),
                             (self.cube.back_color(), self.cube.left_color())]
 
-            edge_found = False
-            for x in range(-1, 2, 2):
-                for z in range(-1, 2, 2):
-                    for color1, color2 in middle_edges:
-                        if (color1 in self.cube.get_piece(x, -1, z).colors and 
-                            color2 in self.cube.get_piece(x, -1, z).colors):
-                            edge_found = True
-
+            edge_found = self.find_middle_edges(middle_edges)
             # If desired edge exists on bottom, rotate until 'T' is found
             if (edge_found):
                 match = False
                 while (not match):
                     for x in range(-1, 2, 2):
-                        for z in range(-1, 2, 2):
-                            if (self.cube.get_piece(x, 0, z).colors[abs(z*2)] ==
-                                self.cube.get_piece(x, -1, z).colors[abs(z*2)]):
-                                match = True
+                        if (self.cube.get_piece(x, 0, 0).colors[0] ==
+                            self.cube.get_piece(x, -1, 0).colors[0] and
+                            self.cube.get_piece(x, -1, 0).colors[1] != self.cube.down_color()):
+                            match = True
+                    for z in range(-1, 2, 2):
+                        if (self.cube.get_piece(0, 0, z).colors[2] ==
+                            self.cube.get_piece(0, -1, z).colors[2] and
+                            self.cube.get_piece(0, -1, z).colors[1] != self.cube.down_color()):
+                            match = True
                     if (not match):
                         self.cube.D()
         
@@ -137,6 +136,7 @@ class SolveCube(Cube):
                     self.step_three("R")
 
             # Else perform left (or right) move to aquire desired edge on bottom
+            # Make more efficient
             else:
                 self.step_three("L")
         
@@ -149,7 +149,8 @@ class SolveCube(Cube):
 
         while (not self.step4_finished()):
             # Rotate until Correct corner is in the back left
-            while (not self.cube.back_color() in self.cube.get_piece(-1,1,-1).colors):
+            while (not (self.cube.back_color() in self.cube.get_piece(-1,1,-1).colors and
+                    self.cube.left_color() in self.cube.get_piece(-1,1,-1).colors)):
                 self.cube.U()
 
             # If other back cubie is in position 2, switch 1 & 2
@@ -166,18 +167,36 @@ class SolveCube(Cube):
         #####################################
         # EXECUTE STEP 5 - Correct corners
         #####################################
-        # while (not self.step5_finished()):
-        # If position is adequate execute step 5
-        if ((self.cube.get_piece(-1,1,1).colors[2] == self.cube.up_color() and
-            self.cube.get_piece(1,1,1).colors[1] == self.cube.up_color()) or
-            (self.cube.get_piece(1,1,1).colors[0] == self.cube.up_color() and
-            self.cube.get_piece(1,1,-1).colors[0] == self.cube.up_color()) or
-            (self.cube.get_piece(1,1,1).colors[1] == self.cube.up_color() and
-            self.cube.get_piece(1,1,-1).colors[0] == self.cube.up_color())):
-            self.step_five()
-        # Else rotate
-        else:
-            self.cube.sequence("U Ei Di")
+        while (not self.step5_finished()):
+            # If position is adequate execute step 5
+            if ((self.cube.get_piece(-1,1,1).colors[2] == self.cube.up_color() and
+                self.cube.get_piece(1,1,1).colors[1] == self.cube.up_color()) or
+                (self.cube.get_piece(1,1,1).colors[0] == self.cube.up_color() and
+                self.cube.get_piece(1,1,-1).colors[0] == self.cube.up_color()) or
+                (self.cube.get_piece(1,1,1).colors[1] == self.cube.up_color() and
+                self.cube.get_piece(1,1,-1).colors[0] == self.cube.up_color())):
+                self.step_five()
+            # Else rotate
+            else:
+                self.cube.sequence("U Ei Di")
+
+        #####################################
+        # EXECUTE STEP 6 - Finish 2 edges
+        #####################################
+        
+
+    def find_middle_edges(self, middle_edges):
+        for x in range(-1, 2, 2):
+            for color1, color2 in middle_edges:
+                if (color1 in self.cube.get_piece(x, -1, 0).colors and 
+                    color2 in self.cube.get_piece(x, -1, 0).colors):
+                    return True
+        for z in range(-1, 2, 2):
+            for color1, color2 in middle_edges:
+                if (color1 in self.cube.get_piece(0, -1, z).colors and 
+                    color2 in self.cube.get_piece(0, -1, z).colors):
+                    return True
+        return False
 
     # Check to see if step one is complete
     def step1_finished(self):
@@ -236,6 +255,10 @@ class SolveCube(Cube):
         
     # Checks if all corners are oriented correctly
     def step5_finished(self):
+        for x in range(-1, 2, 2):
+            for z in range(-1, 2, 2):
+                if (self.cube.get_piece(x,1,z).colors[1] != self.cube.up_color()):
+                    return False
         return True
 
     # Implement 7 steps
@@ -313,6 +336,7 @@ if __name__ == "__main__":
 
     rubik = SolveCube(c)
     rubik.scramble()
+    # rubik.cube.sequence("E Si Ui Si L S Fi Si L D D Si Bi Fi Mi B S R B F M Mi F F Ri B F E Fi ")
     print(rubik.cube)
     rubik.solve()
     print(rubik.cube)
